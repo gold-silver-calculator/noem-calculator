@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="sk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NOEM Kalkulačka</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            font-weight: 400;
+            background-color: white;
+        }
+        .calculator-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+        }
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        .bottom-container {
+            position: relative;
+            margin-top: 30px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        .bottom-line {
+            flex: 1;
+            height: 2px;
+            background-color: #D4AF37;
+            max-width: 80%;
+            margin-top: 0;
+        }
+        .infolinka {
+            white-space: nowrap;
+            color: #000;
+            font-size: 14px;
+        }
+        .infolinka span {
+            font-weight: bold;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            font-weight: 500;
+        }
+        h1 {
+            color: #000;
+            font-size: 24px;
+            border-bottom: 2px solid #D4AF37;
+            padding-bottom: 8px;
+            margin: 0;
+            width: fit-content;
+        }
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+        .toggle-switch {
+            width: 40px;
+            height: 20px;
+            background-color: #D4AF37;
+            border-radius: 20px;
+            position: relative;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .toggle-switch::before {
+            content: '';
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background-color: white;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.3s;
+        }
+        #metalToggle:checked + .toggle-switch {
+            background-color: #C0C0C0;
+        }
+        #metalToggle:checked + .toggle-switch::before {
+            transform: translateX(18px);
+        }
+        #metalToggle {
+            display: none;
+        }
+        .input-group {
+            margin-bottom: 25px;
+        }
+        .input-label {
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 0px;
+            display: block;
+        }
+        #monthlyInput-label {
+            text-align: center;
+            margin-left: -100px;
+        }
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+        input[type="range"] {
+            -webkit-appearance: none;
+            flex: 1;
+            max-width: 100px;
+            height: 6px;
+            background: #E0E0E0;
+            border-radius: 3px;
+            cursor: pointer;
+            position: relative;
+            margin: 10px 0;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 14px;
+            height: 14px;
+            background: var(--thumb-color, #DAA520);
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+            position: relative;
+            z-index: 2;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        input[type="range"]::-moz-range-thumb {
+            width: 14px;
+            height: 14px;
+            background: var(--thumb-color, #DAA520);
+            border-radius: 50%;
+            cursor: pointer;
+            border: none;
+            position: relative;
+            z-index: 2;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        input[type="range"]::-moz-range-track {
+            height: 6px;
+            background: #E0E0E0;
+            border: none;
+            border-radius: 3px;
+        }
+        #monthlySlider {
+            max-width: 350px;
+        }
+        #endYearSlider {
+            max-width: 110px;
+        }
+        input[type="number"] {
+            width: 45px;
+            padding: 4px 6px;
+            font-size: 14px;
+            border: 1px solid #E5E5E5;
+            border-radius: 4px;
+            text-align: center;
+            background: white;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #D4AF37;
+            box-shadow: 0 0 0 2px rgba(212,175,55,0.1);
+        }
+        /* Hide number input spinners */
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
+        .euro-symbol {
+            font-size: 13px;
+            color: #000;
+        }
+        .content-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin: 0;
+            gap: 85px;
+        }
+        .inputs-section {
+            flex: 0 0 auto;
+        }
+        .results-container {
+            flex: 1;
+            margin-top: -45px;
+        }
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 25px;
+        }
+        .results-section {
+            padding: 0;
+            font-weight: 400;
+        }
+        .results-section h2 {
+            font-size: 16px;
+            font-weight: bold;
+            margin-bottom: 12px;
+            margin-top: 0;
+        }
+        .result-item {
+            font-size: 15px;
+            margin-bottom: 8px;
+            white-space: nowrap;
+        }
+        .result-value {
+            font-weight: bold;
+            margin-left: 0px;
+        }
+        .result-label {
+            color: #000;
+        }
+        .profit {
+            color: #D4AF37;
+        }
+        .chart-container {
+            margin-top: 0px;
+            padding: 0 0 10px 0;
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+        }
+        canvas {
+            pointer-events: none;
+        }
+        #metalLabel {
+            font-weight: bold;
+        }
+        .year-inputs {
+            display: flex;
+            gap: 60px;
+        }
+        .year-inputs .input-group {
+            flex: 0 0 auto;
+        }
+        .year-inputs .slider-container {
+            width: 120px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .year-inputs .input-label {
+            margin-bottom: 6px;
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator-container">
+        <div class="header-container">
+            <h1>NOEM Kalkulačka</h1>
+        </div>
+
+        <div class="content-container">
+            <div class="inputs-section">
+                <div class="input-group">
+                    <label id="monthlyInput-label" class="input-label">Mesačný nákup od:</label>
+                    <div class="slider-container">
+                        <input type="range" id="monthlySlider" min="20" max="10000" value="100">
+                        <input type="number" id="monthlyInput" min="20" max="10000" value="100">
+                        <span class="euro-symbol">€</span>
+                    </div>
+                </div>
+
+                <div class="year-inputs">
+                    <div class="input-group">
+                        <label class="input-label">Začiatok nákupov v roku:</label>
+                        <div class="slider-container">
+                            <input type="range" id="startYearSlider" min="1999" max="2024" value="1999">
+                            <input type="number" id="startYearInput" min="1999" max="2024" value="1999">
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label class="input-label">Ukončenie nákupov v roku:</label>
+                        <div class="slider-container">
+                            <input type="range" id="endYearSlider" min="1999" max="2025" value="2025">
+                            <input type="number" id="endYearInput" min="1999" max="2025" value="2025">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="results-container">
+                <div class="toggle-container">
+                    <span id="metalLabel">Zlato</span>
+                    <label>
+                        <input type="checkbox" id="metalToggle">
+                        <div class="toggle-switch"></div>
+                    </label>
+                </div>
+
+                <div class="results-section">
+                    <h2>Výsledok simulácie:</h2>
+                    <div class="result-item">
+                        <span class="result-label">Celková suma použitá na nákupy zlata:</span>
+                        <span id="totalInvested" class="result-value">0€</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Celková hodnota zlata:</span>
+                        <span id="finalValue" class="result-value">0€</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Zisk:</span>
+                        <span id="profit" class="result-value profit">0€</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Celkový zisk v zlate:</span>
+                        <span id="profitPct" class="result-value profit">0g</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <canvas id="metalChart"></canvas>
+        </div>
+
+        <div class="bottom-container">
+            <div class="bottom-line"></div>
+            <div class="infolinka">Infolinka: <span>0800 221 022</span></div>
+        </div>
+    </div>
+
+    <script>
+        /* 
+          Dáta pre ZLATO a STRIEBRO:
+          - Každý objekt obsahuje "price" = reálna cena v €/… (napr. za gram),
+            a "pct" = kumulatívne % oproti 1.1.1999.
+          - Okrem 2024 sú aj samostatné kľúče pre "2024-10" / "2024-11" atď.,
+            aby sme mohli rozlišovať 30.10./21.11. a pod.
+          Ale vy ste uviedli 30.10.2024 pre zlato a 25.10.2024 pre striebro
+          => zjednodušene použijeme "YYYY" a "YYYY-xx" 
+        */
+
+        /* ========== ZLATO ========== */
+        const goldData = {
+          1999:  { price: 7.88,   pct: 0 },
+          2000:  { price: 8.65,   pct: 11.74 },
+          2001:  { price: 9.08,   pct: 16.10 },
+          2002:  { price: 9.93,   pct: 31.22 },
+          2003:  { price: 10.71,  pct: 36.30 },
+          2004:  { price: 10.79,  pct: 34.04 },
+          2005:  { price: 10.33,  pct: 31.68 },
+          2006:  { price: 14.08,  pct: 78.71 },
+          2007:  { price: 15.34,  pct: 98.03 },
+          2008:  { price: 18.43,  pct: 138.51 },
+          2009:  { price: 20.27,  pct: 159.46 },
+          2010:  { price: 24.89,  pct: 219.66 },
+          2011:  { price: 34.01,  pct: 329.74 },
+          2012:  { price: 41.61,  pct: 410.01 },
+          2013:  { price: 40.51,  pct: 422.94 },
+          2014:  { price: 29.19,  pct: 270.76 },
+          2015:  { price: 32.71,  pct: 328.41 },
+          2016:  { price: 32.45,  pct: 311.60 },
+          2017:  { price: 35.93,  pct: 363.47 },
+          2018:  { price: 34.96,  pct: 345.97 },
+          2019:  { price: 36.30,  pct: 361.50 },
+          2020:  { price: 43.68,  pct: 448.66 },
+          2021:  { price: 50.89,  pct: 520.20 },
+          2022:  { price: 51.26,  pct: 552.69 },
+          2023:  { price: 56.04,  pct: 617.39 },
+          2024:  { price: 60.12,  pct: 654.12 },
+          2025:  { price: 83.48,  pct: 976.90 }
+        };
+
+        /* ========== STRIEBRO ========== */
+        const silverData = {
+          1999:  { price: 0.14, pct: 0 },
+          2000:  { price: 0.16, pct: 14.51 },
+          2001:  { price: 0.16, pct: 7.48 },
+          2002:  { price: 0.17, pct: 16.10 },
+          2003:  { price: 0.15, pct: 6.12 },
+          2004:  { price: 0.16, pct: 11.79 },
+          2005:  { price: 0.16, pct: 10.43 },
+          2006:  { price: 0.24, pct: 68.71 },
+          2007:  { price: 0.30, pct: 119.96 },
+          2008:  { price: 0.33, pct: 135.15 },
+          2009:  { price: 0.26, pct: 84.35 },
+          2010:  { price: 0.41, pct: 182.77 },
+          2011:  { price: 0.70, pct: 418.83 },
+          2012:  { price: 0.70, pct: 412.70 },
+          2013:  { price: 0.75, pct: 431.75 },
+          2014:  { price: 0.48, pct: 232.88 },
+          2015:  { price: 0.44, pct: 217.46 },
+          2016:  { price: 0.42, pct: 195.24 },
+          2017:  { price: 0.51, pct: 256.92 },
+          2018:  { price: 0.46, pct: 222.0 },
+          2019:  { price: 0.44, pct: 212.02 },
+          2020:  { price: 0.52, pct: 269.62 },
+          2021:  { price: 0.71, pct: 367.45 },
+          2022:  { price: 0.63, pct: 356.24 },
+          2023:  { price: 0.71, pct: 400.23 },
+          2024:  { price: 0.67, pct: 379.6 },
+          2025:  { price: 0.95, pct: 585.71 }
+        };
+
+        /* 
+          Funkcia, ktorá nám vyberie správny "endKey" pre 2024:
+          - Ak endYear < 2024, použijeme string endYear
+          - Ak endYear == 2024, podľa toho, či je zapnuté "Zlato" / "Striebro",
+            vyberieme buď "2024" alebo "2024-11" (Zlato)
+            alebo "2024" / "2024-10" (Striebro).
+          Ale vy ste uviedli 30.10.2024 pre zlato a 25.10.2024 pre striebro
+          => zjednodušene použijeme "YYYY" a "YYYY-xx" 
+        */
+
+        function getEndKey(metalData, endYear, isGold) {
+            return String(endYear);
+        }
+
+        /* 
+          Podobne, pre ročný nákup "startYear" => v 2024 budeme používať "2024"
+        */
+        function getStartKey(startYear) {
+            if (startYear < 2024) return String(startYear);
+            return "2024";
+        }
+
+        // Vracia dataSet (price + pct) pre vybraný kov
+        function getMetalData() {
+          const toggle = document.getElementById("metalToggle");
+          // Ak je checkbox "checked" => striebro, inak zlato
+          return toggle.checked ? silverData : goldData;
+        }
+
+        // Vracia text pre chart label (Zlato/Striebro)
+        function getMetalName() {
+          const toggle = document.getElementById("metalToggle");
+          return toggle.checked ? "Striebro" : "Zlato";
+        }
+
+        let metalChart;
+
+        function calculateAll() {
+          const monthly = parseInt(document.getElementById("monthlyInput").value);
+          const startY  = parseInt(document.getElementById("startYearInput").value);
+          const endY    = parseInt(document.getElementById("endYearInput").value);
+
+          // Validácia vstupov
+          if (document.activeElement !== document.getElementById("monthlyInput") && 
+              (isNaN(monthly) || monthly < 20 || monthly > 10000)) {
+            alert("Mesačná suma musí byť 20€ - 10.000€");
+            return;
+          }
+          if (document.activeElement !== document.getElementById("startYearInput") && 
+              document.activeElement !== document.getElementById("endYearInput") && 
+              (startY < 1999 || startY > 2025 || endY < 1999 || endY > 2025)) {
+            alert("Rok musí byť medzi 1999 - 2025");
+            return;
+          }
+          if (endY < startY) {
+            alert("Koncový rok musí byť >= počiatočný rok");
+            return;
+          }
+
+          const metalData = getMetalData();
+          const metalName = getMetalName();
+          
+          // Ročná investícia (12 × mesačná)
+          const yearlyInvestment = monthly * 12;
+          
+          // Výpočet celkovej investície
+          const years = endY - startY + 1;
+          const totalInvested = yearlyInvestment * years;
+          
+          // Výpočet celkových gramov
+          let totalGrams = 0;
+          let yearlyGrams = [];
+          
+          // Pre každý rok vypočítame gramy podľa januárovej ceny
+          for (let year = startY; year <= endY; year++) {
+            const yearKey = year.toString();
+            if (!metalData[yearKey]) continue;
+            
+            // Januárová cena pre daný rok
+            const januaryPrice = metalData[yearKey].price;
+            
+            // Výpočet gramov pre tento rok (1200 / cena za gram)
+            const gramsThisYear = yearlyInvestment / januaryPrice;
+            totalGrams += gramsThisYear;
+            
+            // Debug informácie
+            console.log(`Rok ${year}:`);
+            console.log(`  Cena za gram: ${januaryPrice}€`);
+            console.log(`  Ročná investícia: ${yearlyInvestment}€`);
+            console.log(`  Nakúpené gramy: ${gramsThisYear.toFixed(3)}g`);
+            
+            yearlyGrams.push({
+              year: year,
+              price: januaryPrice,
+              investment: yearlyInvestment,
+              grams: gramsThisYear
+            });
+          }
+          
+          // Debug výpis celkových gramov
+          console.log(`Celkové gramy: ${totalGrams.toFixed(3)}g`);
+          
+          // Konečná hodnota = celkové gramy × januárová cena posledného roka
+          const finalPrice = metalData[endY.toString()].price;
+          console.log(`Konečná cena (${endY}): ${finalPrice}€/g`);
+          
+          const finalValue = totalGrams * finalPrice;
+          console.log(`Konečná hodnota: ${finalValue.toFixed(2)}€`);
+          
+          // Zisk/strata = konečná hodnota - celková investícia
+          const profitLoss = finalValue - totalInvested;
+          console.log(`Zisk/strata: ${profitLoss.toFixed(2)}€`);
+          
+          // Zobrazenie výsledkov
+          document.getElementById("totalInvested").textContent 
+            = Math.round(totalInvested).toLocaleString() + "€";
+          document.getElementById("finalValue").textContent
+            = Math.round(finalValue).toLocaleString() + "€";
+          document.getElementById("profit").textContent
+            = Math.round(profitLoss).toLocaleString() + "€";
+          
+          // Percentuálny výpočet zostáva nezmenený
+          const startMult = metalData[startY.toString()].pct / 100 + 1;
+          const endMult = metalData[endY.toString()].pct / 100 + 1;
+          const profitPct = ((endMult - startMult) / startMult) * 100;
+          const totalGramsText = totalGrams >= 1000 
+            ? (totalGrams / 1000).toFixed(2) + " kg"
+            : totalGrams.toFixed(2) + " g";
+          document.getElementById("profitPct").textContent = totalGramsText;
+
+          // Graf hodnoty portfólia
+          let labels = [];
+          let chartValues = [];
+          
+          // Postupné počítanie hodnoty portfólia
+          let accumulatedGrams = 0;
+          for (let year = startY; year <= endY; year++) {
+            const yearKey = year.toString();
+            if (!metalData[yearKey]) continue;
+            
+            const januaryPrice = metalData[yearKey].price;
+            const gramsThisYear = yearlyInvestment / januaryPrice;
+            accumulatedGrams += gramsThisYear;
+            
+            // Hodnota portfólia v danom roku
+            const portfolioValue = accumulatedGrams * januaryPrice;
+            
+            labels.push(yearKey);
+            chartValues.push(Math.round(portfolioValue));
+          }
+          // (4) Update/Init chart.js
+          if (!metalChart) {
+            // Initial chart setup
+            const ctx = document.getElementById("metalChart").getContext("2d");
+            metalChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: getMetalName() === 'Zlato' ? 'Vývoj hodnoty zlata' : 'Vývoj hodnoty striebra',
+                        data: chartValues,
+                        borderColor: getMetalName() === 'Zlato' ? '#EDE0AD' : '#D9D9D9',
+                        backgroundColor: getMetalName() === 'Zlato' ? 
+                            'rgba(237, 224, 173, 0.2)' : 'rgba(217, 217, 217, 0.2)',
+                        fill: true,
+                        pointRadius: 3,
+                        pointBackgroundColor: getMetalName() === 'Zlato' ? '#EDE0AD' : '#D9D9D9',
+                        pointBorderColor: getMetalName() === 'Zlato' ? '#EDE0AD' : '#D9D9D9'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            align: 'center',
+                            labels: {
+                                boxWidth: 15,
+                                usePointStyle: true,
+                                pointStyle: 'rect',
+                                padding: 20,
+                                color: '#000000',
+                                font: {
+                                    size: 14
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: '#E5E5E5'
+                            },
+                            ticks: {
+                                callback: function(value) {
+                                    return value.toLocaleString() + '€';
+                                },
+                                color: '#000000'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                color: '#000000'
+                            }
+                        }
+                    }
+                }
+            });
+          } else {
+            // Update existing chart
+            metalChart.data.labels = labels;
+            metalChart.data.datasets[0].label = getMetalName() === 'Zlato' ? 'Vývoj hodnoty zlata' : 'Vývoj hodnoty striebra';
+            metalChart.data.datasets[0].data = chartValues;
+            metalChart.data.datasets[0].borderColor = getMetalName() === 'Zlato' ? '#EDE0AD' : '#D9D9D9';
+            metalChart.data.datasets[0].backgroundColor = getMetalName() === 'Zlato' ? 
+                'rgba(237, 224, 173, 0.2)' : 'rgba(217, 217, 217, 0.2)';
+            metalChart.data.datasets[0].pointBackgroundColor = getMetalName() === 'Zlato' ? '#EDE0AD' : '#D9D9D9';
+            metalChart.data.datasets[0].pointBorderColor = getMetalName() === 'Zlato' ? '#EDE0AD' : '#D9D9D9';
+            metalChart.update();
+          }
+        }
+
+        // Prepojenia slider↔number
+        function linkSliderAndInput(sliderId, inputId) {
+            const slider = document.getElementById(sliderId);
+            const input = document.getElementById(inputId);
+
+            function updateSliderBackground(value) {
+                const percent = (value - slider.min) / (slider.max - slider.min) * 100;
+                const sliderColor = document.getElementById("metalToggle").checked ? '#4C4C4C' : '#DAA520';
+                slider.style.background = `linear-gradient(to right, ${sliderColor} 0%, ${sliderColor} ${percent}%, #E0E0E0 ${percent}%, #E0E0E0 100%)`;
+            }
+
+            slider.oninput = function() {
+                input.value = this.value;
+                updateSliderBackground(this.value);
+                calculateAll();
+            }
+
+            input.onchange = function() {
+                let value = parseInt(this.value);
+                if (isNaN(value)) value = parseInt(slider.min);
+                if (value < parseInt(slider.min)) value = parseInt(slider.min);
+                if (value > parseInt(slider.max)) value = parseInt(slider.max);
+                this.value = value;
+                slider.value = value;
+                updateSliderBackground(value);
+                calculateAll();
+            }
+
+            // Add real-time update on input
+            input.oninput = function() {
+                let value = parseInt(this.value);
+                if (!isNaN(value)) {
+                    if (value < parseInt(slider.min)) value = parseInt(slider.min);
+                    if (value > parseInt(slider.max)) value = parseInt(slider.max);
+                    slider.value = value;
+                    updateSliderBackground(value);
+                    calculateAll();
+                }
+            }
+
+            // Initial background
+            updateSliderBackground(slider.value);
+        }
+
+        linkSliderAndInput("monthlySlider","monthlyInput");
+        linkSliderAndInput("startYearSlider","startYearInput");
+        linkSliderAndInput("endYearSlider","endYearInput");
+
+        // Keď sa zmení checkbox => recalcul
+        document.getElementById("metalToggle").addEventListener('change', (e) => {
+            const metalLabel = document.getElementById("metalLabel");
+            const ranges = document.querySelectorAll('input[type="range"]');
+            const profitElements = document.querySelectorAll('.profit');
+            const isChecked = e.target.checked;
+            
+            // For Slovak grammar:
+            // zlato -> zlata (genitive)
+            // zlate (locative)
+            // striebro -> striebra (genitive)
+            // striebre (locative)
+            const metalGenitive = isChecked ? 'striebra' : 'zlata';  // for "hodnota čoho?" and "nákupy čoho?"
+            const metalLocative = isChecked ? 'striebre' : 'zlate';  // for "v čom?"
+            
+            // Update result labels
+            const resultLabels = document.querySelectorAll('.result-item .result-label');
+            resultLabels[0].textContent = `Celková suma použitá na nákupy ${metalGenitive}:`;
+            resultLabels[1].textContent = `Celková hodnota ${metalGenitive}:`;
+            resultLabels[3].textContent = `Celkový zisk v ${metalLocative}:`;
+            
+            // UI element colors
+            const uiColor = isChecked ? '#C0C0C0' : '#D4AF37';
+            // Slider colors
+            const sliderColor = isChecked ? '#4C4C4C' : '#DAA520';
+            
+            document.documentElement.style.setProperty('--thumb-color', sliderColor);
+            metalLabel.textContent = isChecked ? 'Striebro' : 'Zlato';
+            
+            // Update ranges with slider color
+            ranges.forEach(range => {
+                const value = (range.value - range.min) / (range.max - range.min) * 100;
+                range.style.background = `linear-gradient(to right, ${sliderColor} ${value}%, #E0E0E0 ${value}%)`;
+                
+                range.addEventListener('input', function() {
+                    const value = (this.value - this.min) / (this.max - this.min) * 100;
+                    const currentColor = document.getElementById("metalToggle").checked ? '#4C4C4C' : '#DAA520';
+                    this.style.background = `linear-gradient(to right, ${currentColor} ${value}%, #E0E0E0 ${value}%)`;
+                });
+            });
+
+            // Update profit elements color with UI color
+            profitElements.forEach(el => {
+                el.style.color = uiColor;
+            });
+
+            calculateAll();
+        });
+
+        // Initialize all sliders
+        function initializeSliders() {
+            const isChecked = document.getElementById("metalToggle").checked;
+            const sliderColor = isChecked ? '#4C4C4C' : '#DAA520';
+            document.documentElement.style.setProperty('--thumb-color', sliderColor);
+            
+            document.querySelectorAll('input[type="range"]').forEach(range => {
+                const value = (range.value - range.min) / (range.max - range.min) * 100;
+                range.style.background = `linear-gradient(to right, ${sliderColor} ${value}%, #E5E5E5 ${value}%)`;
+                
+                range.addEventListener('input', function() {
+                    const value = (this.value - this.min) / (this.max - this.min) * 100;
+                    const currentColor = document.getElementById("metalToggle").checked ? '#4C4C4C' : '#DAA520';
+                    this.style.background = `linear-gradient(to right, ${currentColor} ${value}%, #E5E5E5 ${value}%)`;
+                });
+            });
+        }
+
+        // Call initialization on both DOMContentLoaded and load
+        document.addEventListener('DOMContentLoaded', initializeSliders);
+        window.addEventListener('load', () => {
+            initializeSliders();
+            calculateAll();
+        });
+    </script>
+</body>
+</html>
